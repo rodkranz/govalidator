@@ -1,13 +1,13 @@
-// Package go_validator 
+// Package go_validator
 package govalidator
 
 import (
 	"fmt"
-	"reflect"
-	"strings"
-	"strconv"
-	"unicode/utf8"
 	"net/url"
+	"reflect"
+	"strconv"
+	"strings"
+	"unicode/utf8"
 )
 
 func Validate(obj interface{}) (bool, Errors) {
@@ -154,7 +154,7 @@ VALIDATE_RULES:
 			}
 
 		case strings.HasPrefix(rule, SIZE+"("):
-			size, _ := strconv.Atoi(rule[5: len(rule)-1])
+			size, _ := strconv.Atoi(rule[5 : len(rule)-1])
 			if str, ok := fieldValue.(string); ok && utf8.RuneCountInString(str) != size {
 				errors.Add(field.Name, alias, ERR_SIZE, SIZE)
 				break VALIDATE_RULES
@@ -165,8 +165,15 @@ VALIDATE_RULES:
 				break VALIDATE_RULES
 			}
 
+			if v.Kind() == reflect.Ptr {
+				elm := v.Elem()
+				if elm.Kind() == reflect.String && elm.Len() != size {
+					errors.Add(field.Name, alias, ERR_MAX_SIZE, MAX_SIZE)
+					break VALIDATE_RULES
+				}
+			}
 		case strings.HasPrefix(rule, MIN_SIZE+"("):
-			min, _ := strconv.Atoi(rule[8: len(rule)-1])
+			min, _ := strconv.Atoi(rule[8 : len(rule)-1])
 			if str, ok := fieldValue.(string); ok && utf8.RuneCountInString(str) < min {
 				errors.Add(field.Name, alias, ERR_MIN_SIZE, MIN_SIZE)
 				break VALIDATE_RULES
@@ -177,8 +184,15 @@ VALIDATE_RULES:
 				break VALIDATE_RULES
 			}
 
+			if v.Kind() == reflect.Ptr {
+				elm := v.Elem()
+				if elm.Kind() == reflect.String && elm.Len() < min {
+					errors.Add(field.Name, alias, ERR_MIN_SIZE, MIN_SIZE)
+					break VALIDATE_RULES
+				}
+			}
 		case strings.HasPrefix(rule, MAX_SIZE+"("):
-			max, _ := strconv.Atoi(rule[8: len(rule)-1])
+			max, _ := strconv.Atoi(rule[8 : len(rule)-1])
 			if str, ok := fieldValue.(string); ok && utf8.RuneCountInString(str) > max {
 				errors.Add(field.Name, alias, ERR_MAX_SIZE, MAX_SIZE)
 				break VALIDATE_RULES
@@ -189,6 +203,13 @@ VALIDATE_RULES:
 				break VALIDATE_RULES
 			}
 
+			if v.Kind() == reflect.Ptr {
+				elm := v.Elem()
+				if elm.Kind() == reflect.String && elm.Len() > max {
+					errors.Add(field.Name, alias, ERR_MAX_SIZE, MAX_SIZE)
+					break VALIDATE_RULES
+				}
+			}
 		case strings.HasPrefix(rule, INCLUDE+"("):
 			if !strings.Contains(fmt.Sprintf("%v", fieldValue), rule[8:len(rule)-1]) {
 				errors.Add(field.Name, alias, ERR_INCLUDE, INCLUDE)
