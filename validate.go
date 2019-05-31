@@ -96,11 +96,6 @@ VALIDATE_RULES:
 			continue
 		}
 
-		fmt.Println("-->", field.Name)
-		if field.Name == "Phone" {
-			fmt.Println("here")
-		}
-
 		alias := field.Tag.Get("alias")
 
 		switch {
